@@ -25,8 +25,8 @@ const inputText = ref('')
 const streaming = ref(false)
 const sidebarCollapsed = ref(false)
 
-const activeConversation = computed(() =>
-  conversations.value.find((c) => c.id === activeId.value) || null
+const activeConversation = computed(
+  () => conversations.value.find((c) => c.id === activeId.value) || null
 )
 
 const messages = computed(() => activeConversation.value?.messages || [])
@@ -76,8 +76,8 @@ function clearAll() {
 }
 
 function sendQuickMessage(text) {
-  inputText.value = text
   if (!activeId.value) newConversation()
+  inputText.value = text
   sendMessage()
 }
 
@@ -100,7 +100,12 @@ async function sendMessage() {
   inputText.value = ''
 
   // 添加助手消息占位
-  const assistantMsg = { role: 'assistant', content: '', time: Date.now(), done: false }
+  const assistantMsg = {
+    role: 'assistant',
+    content: '',
+    time: Date.now(),
+    done: false,
+  }
   conv.messages.push(assistantMsg)
   streaming.value = true
   await scrollToBottom()
@@ -130,7 +135,10 @@ function handleKeydown(e) {
 }
 
 function cleanCodeBlock(text) {
-  return text.replace(/^```\w*\n?/, '').replace(/\n?```$/, '').trim()
+  return text
+    .replace(/^```\w*\n?/, '')
+    .replace(/\n?```$/, '')
+    .trim()
 }
 
 function copyText(text) {
@@ -172,11 +180,14 @@ onMounted(() => {
       <div class="sidebar-header">
         <div class="logo-area" v-show="!sidebarCollapsed">
           <div class="logo-icon">
-            <el-icon :size="20"><Promotion /></el-icon>
+            <img src="/favicon.svg" alt="logo" />
           </div>
           <span class="logo-text">Commit Generator</span>
         </div>
-        <button class="toggle-btn" @click="sidebarCollapsed = !sidebarCollapsed">
+        <button
+          class="toggle-btn"
+          @click="sidebarCollapsed = !sidebarCollapsed"
+        >
           <el-icon :size="18">
             <DArrowLeft v-if="!sidebarCollapsed" />
             <DArrowRight v-else />
@@ -201,7 +212,10 @@ onMounted(() => {
         >
           <el-icon class="conv-icon"><ChatDotRound /></el-icon>
           <span class="conv-title">{{ conv.title }}</span>
-          <button class="conv-delete" @click="deleteConversation(conv.id, $event)">
+          <button
+            class="conv-delete"
+            @click="deleteConversation(conv.id, $event)"
+          >
             <el-icon :size="14"><Close /></el-icon>
           </button>
         </div>
@@ -213,7 +227,11 @@ onMounted(() => {
       </div>
 
       <div class="sidebar-footer" v-show="!sidebarCollapsed">
-        <button class="clear-btn" @click="clearAll" v-if="conversations.length > 0">
+        <button
+          class="clear-btn"
+          @click="clearAll"
+          v-if="conversations.length > 0"
+        >
           <el-icon><Delete /></el-icon>
           <span>清除全部</span>
         </button>
@@ -223,22 +241,49 @@ onMounted(() => {
     <!-- 主区域 -->
     <main class="main-area">
       <!-- 空状态 -->
-      <div v-if="!activeConversation || messages.length === 0" class="empty-state">
+      <div
+        v-if="!activeConversation || messages.length === 0"
+        class="empty-state"
+      >
         <div class="empty-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="64" height="64">
-            <path d="M6 3v12M18 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM18 9a9 9 0 0 1-9 9" stroke-linecap="round" stroke-linejoin="round"/>
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            width="64"
+            height="64"
+          >
+            <path
+              d="M6 3v12M18 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM18 9a9 9 0 0 1-9 9"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
           </svg>
         </div>
         <h1>Git Commit 生成器</h1>
         <p>输入你的代码变更描述，AI 为你生成规范的 commit message</p>
         <div class="suggestions">
-          <button class="suggestion-chip" @click="sendQuickMessage('修复用户登录时 token 过期未刷新的 bug')">
+          <button
+            class="suggestion-chip"
+            @click="sendQuickMessage('修复用户登录时 token 过期未刷新的 bug')"
+          >
             修复登录 token 刷新 bug
           </button>
-          <button class="suggestion-chip" @click="sendQuickMessage('新增订单导出 CSV 功能，支持按日期范围筛选')">
+          <button
+            class="suggestion-chip"
+            @click="
+              sendQuickMessage('新增订单导出 CSV 功能，支持按日期范围筛选')
+            "
+          >
             新增订单导出 CSV 功能
           </button>
-          <button class="suggestion-chip" @click="sendQuickMessage('重构支付模块，拆分支付宝和微信支付为独立服务')">
+          <button
+            class="suggestion-chip"
+            @click="
+              sendQuickMessage('重构支付模块，拆分支付宝和微信支付为独立服务')
+            "
+          >
             重构支付模块
           </button>
         </div>
@@ -256,20 +301,32 @@ onMounted(() => {
             v-for="(msg, idx) in messages"
             :key="idx"
             class="message"
-            :class="[msg.role, { streaming: msg.role === 'assistant' && !msg.done }]"
+            :class="[
+              msg.role,
+              { streaming: msg.role === 'assistant' && !msg.done },
+            ]"
           >
             <!-- 助手消息：头像在左 -->
             <template v-if="msg.role === 'assistant'">
               <div class="msg-avatar">
-                <el-icon :size="16"><Promotion /></el-icon>
+                <img src="/favicon.svg" alt="assistant" />
               </div>
               <div class="msg-body">
                 <div class="msg-content assistant-msg">
-                  <div class="streaming-text" v-html="formatContent(msg.content)"></div>
-                  <span v-if="!msg.done" class="typing-cursor"></span>
+                  <div
+                    class="streaming-text"
+                    v-html="formatContent(msg.content)"
+                  ></div>
+                  <span v-if="!msg.done" class="typing-cursor">
+                    <span></span><span></span><span></span>
+                  </span>
                 </div>
                 <div class="msg-actions" v-if="msg.done">
-                  <button class="action-btn" @click="copyText(msg.content)" title="复制">
+                  <button
+                    class="action-btn"
+                    @click="copyText(msg.content)"
+                    title="复制"
+                  >
                     <el-icon :size="14"><CopyDocument /></el-icon>
                   </button>
                 </div>
@@ -282,7 +339,18 @@ onMounted(() => {
                 <div class="msg-content">
                   <pre>{{ msg.content }}</pre>
                 </div>
-                <span class="msg-time text-right">{{ formatTime(msg.time) }}</span>
+                <div class="msg-actions justify-end">
+                  <button
+                    class="action-btn"
+                    @click="copyText(msg.content)"
+                    title="复制"
+                  >
+                    <el-icon :size="14"><CopyDocument /></el-icon>
+                  </button>
+                </div>
+                <span class="msg-time text-right">{{
+                  formatTime(msg.time)
+                }}</span>
               </div>
               <div class="msg-avatar">
                 <el-icon :size="16"><User /></el-icon>
@@ -293,7 +361,12 @@ onMounted(() => {
       </template>
 
       <!-- 输入区域 -->
-      <div class="input-area" :class="{ 'has-conversation': activeConversation && messages.length > 0 }">
+      <div
+        class="input-area"
+        :class="{
+          'has-conversation': activeConversation && messages.length > 0,
+        }"
+      >
         <div class="input-wrapper">
           <el-input
             v-model="inputText"
@@ -305,14 +378,10 @@ onMounted(() => {
           />
           <button
             class="send-btn"
-            :class="{ active: inputText.trim() && !streaming }"
             @click="sendMessage"
             :disabled="!inputText.trim() || streaming"
           >
-            <el-icon v-if="!streaming" :size="20"><Promotion /></el-icon>
-            <div v-else class="loading-dots">
-              <span></span><span></span><span></span>
-            </div>
+            <el-icon :size="20"><Promotion /></el-icon>
           </button>
         </div>
         <p class="input-hint">Enter 发送 · Shift+Enter 换行</p>
@@ -326,13 +395,21 @@ export default {
   methods: {
     formatContent(text) {
       if (!text) return ''
-      // 去掉首尾的 ``` 标记（流式过程中可能只有开头的 ```）
       let clean = text
+      // 去掉开头的 ``` 和可选语言标识
       if (clean.startsWith('```')) {
-        clean = clean.replace(/^```\w*\n?/, '')
+        clean = clean.slice(3)
+        const newlineIdx = clean.indexOf('\n')
+        if (newlineIdx > 0 && /^[\w]*$/.test(clean.slice(0, newlineIdx))) {
+          clean = clean.slice(newlineIdx + 1)
+        } else if (clean.length === 0 || /^[\w]*$/.test(clean)) {
+          clean = ''
+        }
       }
       // 去掉结尾的 ```
       clean = clean.replace(/\n?```$/, '')
+      // 去掉开头残留的换行
+      clean = clean.replace(/^\n+/, '')
       // 转义 HTML
       let html = clean
         .replace(/&/g, '&amp;')
@@ -358,8 +435,8 @@ export default {
 /* ===== 侧边栏 ===== */
 .sidebar {
   width: 280px;
-  background: rgba(10, 10, 26, 0.85);
-  backdrop-filter: blur(20px);
+  background: rgba(8, 8, 20, 0.7);
+  backdrop-filter: blur(var(--glass-blur));
   border-right: 1px solid rgba(255, 255, 255, 0.06);
   display: flex;
   flex-direction: column;
@@ -389,11 +466,17 @@ export default {
   width: 32px;
   height: 32px;
   border-radius: 10px;
-  background: linear-gradient(135deg, var(--accent-1), var(--accent-3));
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  overflow: hidden;
+}
+
+.logo-icon img {
+  width: 20px;
+  height: 20px;
 }
 
 .logo-text {
@@ -431,9 +514,10 @@ export default {
   justify-content: center;
   gap: 8px;
   padding: 10px 16px;
-  border: 1px dashed rgba(99, 102, 241, 0.3);
+  border: 1px dashed rgba(255, 255, 255, 0.3);
   border-radius: 12px;
-  background: rgba(99, 102, 241, 0.06);
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(8px);
   color: var(--accent-1);
   font-size: 14px;
   cursor: pointer;
@@ -441,8 +525,9 @@ export default {
 }
 
 .new-chat-btn:hover {
-  background: rgba(99, 102, 241, 0.12);
-  border-color: var(--accent-1);
+  background: rgba(99, 102, 241, 0.08);
+  border-color: rgba(99, 102, 241, 0.3);
+  border-style: solid;
 }
 
 .conversation-list {
@@ -460,14 +545,17 @@ export default {
   cursor: pointer;
   transition: all 0.2s;
   margin-bottom: 2px;
+  border: 1px solid transparent;
 }
 
 .conv-item:hover {
   background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.04);
 }
 
 .conv-item.active {
-  background: rgba(99, 102, 241, 0.1);
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.12);
 }
 
 .conv-icon {
@@ -532,9 +620,10 @@ export default {
   justify-content: center;
   gap: 6px;
   padding: 8px;
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
-  background: rgba(239, 68, 68, 0.06);
+  background: rgba(239, 68, 68, 0.1);
+  backdrop-filter: blur(8px);
   color: #ef4444;
   font-size: 13px;
   cursor: pointer;
@@ -570,8 +659,15 @@ export default {
 }
 
 @keyframes pulse-glow {
-  0%, 100% { opacity: 0.6; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.05); }
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
 }
 
 .empty-state h1 {
@@ -600,9 +696,10 @@ export default {
 
 .suggestion-chip {
   padding: 10px 18px;
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 12px;
-  background: rgba(99, 102, 241, 0.04);
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
   color: var(--text-secondary);
   font-size: 13px;
   cursor: pointer;
@@ -610,8 +707,8 @@ export default {
 }
 
 .suggestion-chip:hover {
-  background: rgba(99, 102, 241, 0.1);
-  border-color: var(--accent-1);
+  background: rgba(99, 102, 241, 0.08);
+  border-color: rgba(99, 102, 241, 0.3);
   color: var(--text-primary);
   transform: translateY(-2px);
   box-shadow: 0 4px 20px rgba(99, 102, 241, 0.15);
@@ -624,8 +721,8 @@ export default {
   display: flex;
   align-items: center;
   gap: 12px;
-  backdrop-filter: blur(10px);
-  background: rgba(10, 10, 26, 0.5);
+  backdrop-filter: blur(var(--glass-blur));
+  background: rgba(8, 8, 20, 0.5);
 }
 
 .chat-header h2 {
@@ -653,6 +750,7 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  align-items: flex-start;
 }
 
 .message {
@@ -672,8 +770,14 @@ export default {
 }
 
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .msg-avatar {
@@ -687,13 +791,20 @@ export default {
 }
 
 .message.user .msg-avatar {
-  background: linear-gradient(135deg, #3b82f6, #6366f1);
-  color: white;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary);
 }
 
 .message.assistant .msg-avatar {
-  background: linear-gradient(135deg, var(--accent-1), var(--accent-3));
-  color: white;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.message.assistant .msg-avatar img {
+  width: 18px;
+  height: 18px;
 }
 
 .msg-body {
@@ -706,11 +817,13 @@ export default {
   border-radius: 16px;
   font-size: 14px;
   line-height: 1.7;
+  backdrop-filter: blur(16px);
 }
 
 .message.user .msg-content {
   background: rgba(99, 102, 241, 0.08);
-  border: 1px solid rgba(99, 102, 241, 0.12);
+  border: 1px solid rgba(99, 102, 241, 0.15);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
 .message.user .msg-content pre {
@@ -722,8 +835,12 @@ export default {
 }
 
 .assistant-msg {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
 }
 
 .msg-actions {
@@ -731,6 +848,12 @@ export default {
   gap: 4px;
   margin-top: 8px;
   padding-left: 4px;
+}
+
+.msg-actions.justify-end {
+  justify-content: flex-end;
+  padding-right: 4px;
+  padding-left: 0;
 }
 
 .action-btn {
@@ -766,7 +889,7 @@ export default {
 
 /* 代码块样式 */
 :deep(.code-block) {
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 10px;
   padding: 14px 16px;
@@ -775,6 +898,7 @@ export default {
   font-family: 'JetBrains Mono', 'Fira Code', monospace;
   font-size: 13px;
   line-height: 1.6;
+  backdrop-filter: blur(8px);
 }
 
 :deep(.inline-code) {
@@ -786,22 +910,43 @@ export default {
   color: var(--accent-3);
 }
 
-/* 打字光标 */
+/* 打字光标 - 点点点 */
 .typing-cursor {
-  display: inline-block;
-  width: 2px;
-  height: 18px;
-  background: var(--accent-1);
-  margin-left: 3px;
-  border-radius: 1px;
-  vertical-align: text-bottom;
-  animation: blink 0.8s ease-in-out infinite;
-  box-shadow: 0 0 6px rgba(99, 102, 241, 0.6);
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 4px;
+  vertical-align: middle;
 }
 
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.2; }
+.typing-cursor span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent-1);
+  animation: typing-dot 1.4s ease-in-out infinite;
+  box-shadow: 0 0 4px rgba(99, 102, 241, 0.4);
+}
+
+.typing-cursor span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-cursor span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typing-dot {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.3;
+  }
+  30% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
 }
 
 /* 流式输出等待状态 */
@@ -814,8 +959,13 @@ export default {
 }
 
 @keyframes avatar-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
-  50% { box-shadow: 0 0 0 8px rgba(99, 102, 241, 0); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(99, 102, 241, 0);
+  }
 }
 
 /* 流式文字渐入效果 */
@@ -832,8 +982,8 @@ export default {
 .input-area {
   padding: 16px 24px 20px;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(10px);
-  background: rgba(10, 10, 26, 0.5);
+  backdrop-filter: blur(var(--glass-blur));
+  background: rgba(8, 8, 20, 0.5);
 }
 
 .input-area:not(.has-conversation) {
@@ -864,8 +1014,9 @@ export default {
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  border: none;
-  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
   color: var(--text-secondary);
   cursor: not-allowed;
   display: flex;
@@ -875,37 +1026,38 @@ export default {
   flex-shrink: 0;
 }
 
-.send-btn.active {
-  background: linear-gradient(135deg, var(--accent-1), var(--accent-3));
-  color: white;
-  cursor: pointer;
-  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
-}
-
-.send-btn.active:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
-}
-
 .loading-dots {
   display: flex;
-  gap: 4px;
+  gap: 5px;
+  align-items: center;
 }
 
 .loading-dots span {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: white;
-  animation: dot-pulse 1.2s ease-in-out infinite;
+  animation: dot-pulse 1.4s ease-in-out infinite;
 }
 
-.loading-dots span:nth-child(2) { animation-delay: 0.2s; }
-.loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+.loading-dots span:nth-child(2) {
+  animation-delay: 0.16s;
+}
+.loading-dots span:nth-child(3) {
+  animation-delay: 0.32s;
+}
 
 @keyframes dot-pulse {
-  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
-  40% { transform: scale(1); opacity: 1; }
+  0%,
+  60%,
+  100% {
+    transform: scale(0.5);
+    opacity: 0.3;
+  }
+  30% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .input-hint {
