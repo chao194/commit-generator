@@ -999,6 +999,8 @@ export default {
   display: flex;
   gap: 10px;
   align-items: flex-end;
+  max-width: 720px;
+  margin: 0 auto;
 }
 
 .input-wrapper :deep(.el-textarea) {
